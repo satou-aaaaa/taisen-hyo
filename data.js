@@ -19,6 +19,7 @@
   // 試合の数・回戦の数（ここだけで数える。qa/run.mjs は別のやり方で数え直す）
   const lg = (n) => { let r = 0; while ((1 << r) < n) r++; return r; }; // 2^r が n 以上になる最小の r
   const KO = (n) => n - 1, RR = (n) => (n * (n - 1)) / 2, DE = (n, re) => 2 * n - 2 + (re ? 1 : 0), SWR = (n) => lg(n) + 1, SW = (n, r) => r * Math.floor(n / 2);
+  const swMax = (n) => (n % 2 === 0 ? n - 1 : n); // 同じ2人が2回当たらない（FIDE C.04.1）なら、偶数は人数−1回戦・奇数は人数回戦まで
   const rrRounds = (n) => (n % 2 === 0 ? n - 1 : n);
   const meetRound = (N, a, b) => { let r = 0; while (Math.ceil(a / 2 ** r) !== Math.ceil(b / 2 ** r)) r++; return r; };
 
@@ -99,7 +100,7 @@
       return { q, ...o, why: `優勝した人のほかの${n - 1}人は2回ずつ負けます。${2 * (n - 1)}敗${re ? "に、優勝した人の1敗を足して" : "なので"}、${a}試合です。`, look: "1試合で、負けが1つ増えます。", key: "負けの数の合計＝試合の数。去る人は2敗ずつです。", v: `${n}:${si}:${o.ds.join(".")}` };
     },
     swG: (ns) => (R, lv) => {
-      const n = pick(R, ns), [e] = pick(R, EV), r = ri(R, 3, 7), a = SW(n, r), si = ri(R, 0, 1);
+      const n = pick(R, ns), [e] = pick(R, EV), r = ri(R, 3, Math.min(7, swMax(n))), a = SW(n, r), si = ri(R, 0, 1);
       const q = [`${e}に${n}人。スイス方式で${r}回戦。全部で何試合？（奇数なら毎回1人は不戦勝）`, `${n}人のスイス方式の${e}を${r}回戦。試合は全部でいくつ？`][si];
       const per = Math.floor(n / 2);
       const o = numOpts(R, lv, a, [r * n, per, a + r, a - r, RR(n), n - 1, (per + 1) * r, r * (n - 1)].filter((x) => x !== a), "試合");
@@ -119,8 +120,8 @@
       const [k, t] = pairs.length ? pick(R, pairs) : [1, lo];
       const opts = shuffle(R, order).map((f) => fitName(f, n)), ans = fitName(order[ai], n);
       const list = order.map((f) => `${FMT[f]}${cnt[f]}`).join("・");
-      return { q: `${e}に${n}人。${u}は${k}${u === "コート" ? "面" : "つ"}、1${u === "コート" ? "面" : "つ"}で1日${t}試合。時間内で、試合がいちばん多くなる方式は？`, opts, ans, grp: FMT_GRP[order[ai]],
-        why: `1日に${k * t}試合まで。試合の数は${list}。${k * t}試合に入るうち、いちばん多いのは${FMT[order[ai]]}です。`, look: `1日にできるのは${k}×${t}試合です。`, key: "4つの方式の試合の数を数えて、入るものの中でいちばん多いものを選びます。", v: `${n}:${k}:${t}:${ai}` };
+      return { q: `${e}に${n}人。${u}は${k}${u === "コート" ? "面" : "つ"}、1${u === "コート" ? "面" : "つ"}で1日${t}試合。試合の数だけで考えて、1日に入るいちばん多い方式は？`, opts, ans, grp: FMT_GRP[order[ai]],
+        why: `1日に${k * t}試合まで。試合の数は${list}。${k * t}試合に入るうち、いちばん多いのは${FMT[order[ai]]}です。`, look: `1日に${k}×${t}試合。回戦の順は考えません。`, key: "4つの方式の試合の数を数えて、入るものの中でいちばん多いものを選びます。", v: `${n}:${k}:${t}:${ai}` };
     },
     seed2: () => (R) => {
       const N = pick(R, [8, 16, 32]), p1 = pick(R, [1, N]), h = N / 2, other = p1 === 1 ? range(h + 1, N) : range(1, h), same = (p1 === 1 ? range(2, h) : range(h + 1, N - 1));

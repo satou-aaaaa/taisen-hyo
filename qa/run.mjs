@@ -47,7 +47,7 @@ function expect(k, P) { // [答え, 2段目]
     case "each0": return [`${n - 1}試合`];
     case "kor0": case "kor1": return [`${koSim(n).rounds}回戦`];
     case "rrr1": return [`${rrCircle(n)}回戦`];
-    case "sw1": return [`${swSim(n, num(q, /(\d+)回戦/))}試合`];
+    case "sw1": { const r = num(q, /(\d+)回戦/); if (r > (n % 2 ? n : n - 1)) return ["(同じ2人がまた当たる回戦の数)"]; return [`${swSim(n, r)}試合`]; }
     case "de1": case "de2": return [`${deSim(n, /もう1試合/.test(q))}試合`];
     case "bye1": return [`${koSim(n).byes}人`];
     case "fit2": { const k2 = num(q, /は(\d+)(?:つ|面)/), t = num(q, /1日(\d+)試合/), cap = k2 * t, R = L2(n).r + 1;
@@ -560,6 +560,10 @@ try {
   check("記録の数の所に数でも文字でもない物（{toString:null}）が入っても、ホームが出る（toppu-yomi #1 の CodeRabbit）", await q.locator("#go-dex").count() === 1);
   await q.evaluate((d) => { localStorage.setItem("tsh-v1", JSON.stringify({ v: 1, tut: true, days: {}, hdays: {}, adays: {}, dex: {}, runs: { p: { mode: "p", date: d, list: ["ko1|w2x"], res: [], cur: { wrong: [], hints: 0, step: 2, w2: [{ toString: null }, "lose2"] }, id: "w2x" } }, kofi: {}, ach: {}, ebest: 0 })); }, TODAY); await q.reload(); await q.waitForTimeout(150);
   check("途中の2段目のまちがい w2 に文字でない物（{toString:null}）が入っても、ホームが出る（toukyu-yomi #1 の CodeRabbit）", await q.locator("#go-dex").count() === 1);
+  await q.evaluate((d) => { localStorage.setItem("tsh-v1", JSON.stringify({ v: 1, tut: true, days: {}, hdays: {}, adays: {}, dex: {}, runs: { p: { mode: "p", date: d, list: ["ko1|st1"], res: [], cur: null, id: "st1" } }, kofi: {}, ach: {}, ebest: 0 })); }, TODAY); await q.reload(); await q.waitForTimeout(150);
+  await q.evaluate(() => { __nm.play("p"); __nm.save((s) => { s.runs.p.cur = { i: 0, tag: "ko1|st1", wrong: [], hints: 0, step: 2, w2: [] }; }); }); // 別のタブで1段目に正解して2段目へ進んだ
+  await q.click(`.ch[data-j="${await wrongIdx(q)}"]`); await q.waitForTimeout(100);
+  check("別のタブで2段目へ進んだあと、古い画面で1段目のまちがいを押しても記録に足さず、2段目の画面に合わせる（taisen-hyo #1 の CodeRabbit）", await q.evaluate(() => __nm.load().runs.p.cur.wrong.length === 0) && await q.locator(".why button").count() === 5);
   await q.close(); }
 { const bad = G.KINDS.filter((k) => { for (let i = 0; i < 200; i++) { const P = G.make(`${k.id}|g${i}`); if ((/^(ko|rr|kor|sw|de)\d$/.test(k.id) || k.id === "fit2") ? !G.GROUPS[P.grp] : P.grp) return true; } return false; }).map((k) => k.id), used = new Set(G.KINDS.map((k) => k.grp).filter(Boolean)); for (let i = 0; i < 300; i++) used.add(G.make(`fit2|u${i}`).grp);
   check("2段目「なぜその数になる？」：計算の問題と方式えらびはどれも5つのどれかで、5つとも使う。決まり・山・回戦の数の問題には2段目が無い", bad.length === 0 && Object.keys(G.GROUPS).join() === "lose1,lose2,pair,half,per" && used.size === 5, bad.join(",")); }

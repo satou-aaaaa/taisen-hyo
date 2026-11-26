@@ -1208,7 +1208,7 @@ function askWhy() {
 }
 function paintWhy() {
   const cut = cut2Of();
-  document.querySelectorAll(".why button").forEach((b) => { const x = b.dataset.g, ng = cur.w2.includes(x) || cut.includes(x); b.classList.toggle("ng", ng); b.disabled = ng || cur.done; b.setAttribute("aria-label", G.GROUPS[x].name + (ng ? "（ちがう）" : "")); });
+  document.querySelectorAll(".why button").forEach((b) => { const x = b.dataset.g, ng = cur.w2.includes(x) || cut.includes(x); b.classList.toggle("ng", ng); b.disabled = ng || cur.done; b.setAttribute("aria-label", G.GROUPS[x].name + "。" + G.GROUPS[x].sub + (ng ? "（ちがう）" : "")); });
   const h = $("hint"); if (h) h.disabled = cur.done || cur.hints >= 2 || !!cur.h2 || !left2Of().length;
   $("hintbox").innerHTML = cur.h2 && !cur.done ? `<div class="hint" role="status">💡 ちがう目安を1つ消しました。</div>` : "";
 }
@@ -1224,8 +1224,8 @@ function chooseWhy(x) {
 function sureCount(ok) { const q = cur.i + ":" + cur.tag; save((s) => { const r = s.runs[MODE]; if (!same(r) || r.dsq === q) return; r.dsq = q; r.ds = r.ds || { n: 0, ok: 0 }; r.ds.n++; if (ok) r.ds.ok++; }); }
 function choose(j) {
   if (cur.done || cur.step === 2) return;
-  const t = cur.P.opts[j];
-  if (!same(load().runs[MODE])) { toast("別の画面で先に進んでいます"); return play(); }
+  const t = cur.P.opts[j], r0 = load().runs[MODE];
+  if (!same(r0) || (r0.cur && r0.cur.i === cur.i && r0.cur.tag === cur.tag && r0.cur.step === 2)) { toast("別の画面で先に進んでいます"); return play(); } // 別のタブで2段目へ進んでいたら、古い1段目の答えを足さない（taisen-hyo #1 の CodeRabbit）
   if (t !== cur.P.ans) {
     if (cur.wrong.includes(t)) return;
     buzz(40);
