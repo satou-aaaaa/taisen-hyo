@@ -97,7 +97,7 @@ function expect(k, P) { // [答え, 2段目]
   const okSrc = Object.values(G.SRC).every(([n, u]) => /^FIDE Handbook /.test(n) && /^https:\/\/handbook\.fide\.com\/chapter\//.test(u));
   check("出典は FIDE Handbook だけ", okSrc);
   check("お金・賭け・政治・実在の大会の言葉を入れない", !G.KINDS.some((k) => { const all = [k.why, k.look, k.key, k.ans, k.name]; for (let i = 0; i < 100; i++) { const P = G.make(`${k.id}|nz${i}`); all.push(P.q, P.why, ...P.opts); } return /円|賞金|賭け|かけ金|選挙|政党|甲子園|オリンピック|ワールドカップ|インターハイ|名人戦|竜王/.test(all.join()); }));
-  check("2段目の選び肢に数字を書かない（1段目の答えから2段目が分かってしまう。写し元の #1 の CodeRabbit）", Object.values(G.GROUPS).every((g) => !/\d/.test(g.name + g.sub)));
+  check("2段目の選び肢に数字を書かない（1段目の答えから2段目が分かってしまう。前の新作の #1 の CodeRabbit）", Object.values(G.GROUPS).every((g) => !/\d/.test(g.name + g.sub)));
   check("2段目は5つ（負けた人が去る・二度負けて去る・ふたりの組を数える・回戦ごとに半分・回戦ごとの試合数×回戦の数）", Object.keys(G.GROUPS).join() === "lose1,lose2,pair,half,per");
 }
 {
